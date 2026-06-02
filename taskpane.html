@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<!-- v1.0.0.26 -->   
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Clifford Quote Template</title>
+
+    <!-- Office JavaScript API -->
+    <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+<script src="taskpane.js"></script>
+
+    <!-- Template styles -->
+    <link href="taskpane.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+
+<form id="quoteForm" class="form-grid">
+
+  <div class="form-group">
+    <label for="customerCompany">Customer Company Name</label>
+    <input id="customerCompany" required>
+  </div>
+
+  <div class="form-group">
+    <label for="customerName">Customer Name</label>
+    <input id="customerName" required>
+  </div>
+
+  <div class="form-group">
+    <label for="address1">Address Line 1</label>
+    <input id="address1" required>
+  </div>
+
+  <div class="form-group">
+    <label for="address2">Address Line 2</label>
+    <input id="address2">
+  </div>
+
+  <div class="form-group">
+    <label for="address3">Address Line 3</label>
+    <input id="address3">
+  </div>
+
+  <div class="form-group">
+    <label for="cliffordCompany">Clifford Branch</label>
+    <select id="cliffordCompany"></select>
+  </div>
+
+  <div class="form-group">
+    <label for="salesRep">Sales Agent</label>
+    <select id="salesRep"></select>
+  </div>
+
+  <div class="form-group">
+    <label for="agentEmail">Sales Agent Email</label>
+    <input id="agentEmail">
+  </div>
+
+  <div class="form-group">
+    <label for="quoteDate">Quote Date</label>
+    <input id="quoteDate" type="date">
+  </div>
+
+  <div class="form-group">
+    <label for="quoteId">Quote ID</label>
+    <input id="quoteId" required>
+  </div>
+
+  <div class="form-group">
+    <label for="delivery">Delivery</label>
+    <input id="delivery" required>
+  </div>
+
+  <div class="action-row">
+    <button type="button" id="generateQuote">Update</button> <button id="import" class="button">Import</button>
+    <div id="syncStatus" class="sync-status hidden">Syncing...</div>
+  </div>
+
+</form>
+</body>
+</html>
