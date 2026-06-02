@@ -4,7 +4,7 @@
   xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
   xmlns:ov="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="TaskPaneApp">
   <Id>3ccc92f4-b72c-459e-a06d-e102b206c557</Id>
-  <Version>1.0.0.22</Version>
+  <Version>1.0.0.30</Version>
   <ProviderName>Clifford</ProviderName>
   <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="Quote Automate"/>
