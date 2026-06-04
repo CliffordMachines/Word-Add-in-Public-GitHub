@@ -18,6 +18,12 @@ const cliffordCompany = [
   { name: "AWT" }
 ];
 
+const currency = [
+  { name: "USD" },
+  { name: "EUR" },
+  { name: "ZAR" }
+];
+
 let liveUpdateEnabled = false;
 let isSyncing = false;
 
@@ -62,11 +68,12 @@ function scheduleLiveUpdate() {
 function initialiseUI() {
   populateSalesRepDropdown();
   populateCompanyDropdown();
+  populateCurrency();
   wireSalesRepChange();
   setDefaultQuoteDate();
   wireLiveUpdates();
 
- // Buttons 
+  // Buttons 
   document
     .getElementById("import")
     .addEventListener("click", importDataFromDoc);
@@ -103,6 +110,18 @@ function populateCompanyDropdown() {
 
   cliffordCompany.forEach((company, index) => {
     const option = new Option(company.name, company.name);
+    if (index === 0) option.selected = true;
+    select.append(option);
+  });
+}
+
+function populateCurrency() {
+  const select = document.getElementById("currency");
+
+  select.innerHTML = "";
+
+  currency.forEach((currency, index) => {
+    const option = new Option(currency.name, currency.name);
     if (index === 0) option.selected = true;
     select.append(option);
   });
@@ -154,7 +173,7 @@ function formatDateForWord(isoDate) {
 function wireLiveUpdates() {
   const fields = document.querySelectorAll(
     "#quoteDate, #quoteId, #salesRep, #agentEmail, #cliffordCompany, " +
-    "#customerCompany, #customerName, #address1, #address2, #address3, #delivery"
+    "#customerCompany, #customerName, #address1, #address2, #address3, #currency, #delivery"
   );
 
   fields.forEach(field => {
@@ -165,7 +184,7 @@ function wireLiveUpdates() {
 
 // IMPORT
 async function importDataFromDoc() {
-await Word.run(async (context) => {
+  await Word.run(async (context) => {
     // 1. Define the tags we want to pull back from the document
     const tagsToImport = [
       "quoteId", 
@@ -174,6 +193,10 @@ await Word.run(async (context) => {
       "address1", 
       "address2", 
       "address3",
+      "currency",
+      "cliffordCompany",
+      "salesRep",
+      "agentEmail",
       "delivery"
     ];
     
@@ -195,7 +218,17 @@ await Word.run(async (context) => {
       const docControls = controlMap[tag].items;
 
       if (htmlElement && docControls.length > 0) {
-        htmlElement.value = docControls[0].text;
+        const docValue = docControls[0].text;
+
+        // Dropdown matching lookup for Sales Rep Name -> Email value transition
+        if (tag === "salesRep") {
+          const foundRep = salesReps.find(rep => rep.name === docValue);
+          if (foundRep) {
+            htmlElement.value = foundRep.email;
+          }
+        } else {
+          htmlElement.value = docValue;
+        }
       }
     });
 
@@ -226,6 +259,7 @@ async function generateQuote() {
       address1: document.getElementById("address1").value,
       address2: document.getElementById("address2").value,
       address3: document.getElementById("address3").value,
+      currency: document.getElementById("currency").value,
       delivery: document.getElementById("delivery").value
     };
 
@@ -246,10 +280,10 @@ async function generateQuote() {
         });
       }
 
-	//Set document Title 
-	context.document.properties.title = data.quoteId;
-	context.document.properties.subject = "";
-	context.document.properties.category = "";
+      // Set document Title 
+      context.document.properties.title = data.quoteId;
+      context.document.properties.subject = "";
+      context.document.properties.category = "";
 
       await context.sync();
     });
