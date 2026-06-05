@@ -9,17 +9,17 @@
   <DefaultLocale>en-US</DefaultLocale>
   <DisplayName DefaultValue="Quote Automate"/>
   <Description DefaultValue="Word Quote Automation Tool."/>
-  <IconUrl DefaultValue="https://macrospective.co.za/32.png"/>
-  <HighResolutionIconUrl DefaultValue="https://macrospective.co.za/64.png"/>
-  <SupportUrl DefaultValue="https://macrospective.co.za/support.html"/>
+  <IconUrl DefaultValue="https://cliffordmachines.github.io/Word-Add-in-Public-GitHub/32.png"/>
+  <HighResolutionIconUrl DefaultValue="https://cliffordmachines.github.io/Word-Add-in-Public-GitHub/64.png"/>
+  <SupportUrl DefaultValue="https://cliffordmachines.github.io/Word-Add-in-Public-GitHub/support.html"/>
   <AppDomains>
-    <AppDomain>https://macrospective.co.za</AppDomain>
+    <AppDomain>https://cliffordmachines.github.io/Word-Add-in-Public-GitHub</AppDomain>
   </AppDomains>
   <Hosts>
     <Host Name="Document"/>
   </Hosts>
   <DefaultSettings>
-    <SourceLocation DefaultValue="https://macrospective.co.za/taskpane.html"/>
+    <SourceLocation DefaultValue="https://cliffordmachines.github.io/Word-Add-in-Public-GitHub/taskpane.html"/>
   </DefaultSettings>
   <Permissions>ReadWriteDocument</Permissions>
   <VersionOverrides xmlns="http://schemas.microsoft.com/office/taskpaneappversionoverrides" xsi:type="VersionOverridesV1_0">
@@ -64,13 +64,13 @@
     </Hosts>
     <Resources>
       <bt:Images>
-        <bt:Image id="Icon.16x16" DefaultValue="https://macrospective.co.za/16.png"/>
-        <bt:Image id="Icon.32x32" DefaultValue="https://macrospective.co.za/32.png"/>
-        <bt:Image id="Icon.80x80" DefaultValue="https://macrospective.co.za/80.png"/>
+        <bt:Image id="Icon.16x16" DefaultValue="https://cliffordmachines.github.io/Word-Add-in-Public-GitHub/16.png"/>
+        <bt:Image id="Icon.32x32" DefaultValue="https://cliffordmachines.github.io/Word-Add-in-Public-GitHub/32.png"/>
+        <bt:Image id="Icon.80x80" DefaultValue="https://cliffordmachines.github.io/Word-Add-in-Public-GitHub/80.png"/>
       </bt:Images>
       <bt:Urls>
         <bt:Url id="GetStarted.LearnMoreUrl" DefaultValue="http://go.microsoft.com/fwlink/?LinkId=276812"/>
-        <bt:Url id="Taskpane.Url" DefaultValue="https://macrospective.co.za/taskpane.html"/>
+        <bt:Url id="Taskpane.Url" DefaultValue="https://cliffordmachines.github.io/Word-Add-in-Public-GitHub/taskpane.html"/>
       </bt:Urls>
       <bt:ShortStrings>
         <bt:String id="GetStarted.Title" DefaultValue="Get started with the Quote Automate add-in!"/>
