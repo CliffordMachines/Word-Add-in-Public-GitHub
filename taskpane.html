@@ -1,6 +1,7 @@
+<!-- v1.0.0.31 --> 
 <!DOCTYPE html>
 <html>
-<!-- v1.0.0.30 -->   
+ 
 <head>
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
@@ -71,6 +72,21 @@
   <div class="form-group">
     <label for="currency">Currency</label>
     <select id="currency"></select>
+  </div>
+
+  <div class="form-group">
+    <h6>Terms of Payment (%)</h6>
+    
+    <label for="deposit-pct">Deposit on Order:</label>
+    <input type="number" id="deposit-pct" value="35" min="0" max="100" class="pct-input">%
+    
+    <label for="shipment-pct">Prior to Shipment:</label>
+    <input type="number" id="shipment-pct" value="55" min="0" max="100" class="pct-input">%
+    
+    <label for="signoff-pct">At Project Signoff:</label>
+    <input type="number" id="signoff-pct" value="10" min="0" max="100" class="pct-input">% (Optional)
+
+    <div id="validation-error" class="validation-error-msg"></div>
   </div>
 
   <div class="form-group">
