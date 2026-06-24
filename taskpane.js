@@ -197,7 +197,7 @@ async function importDataFromDoc() {
       "salesRep",
       "agentEmail",
       "delivery", 
-      "testdep",
+      "deposit",
       "shipment",
       "signoff"
     ];
@@ -263,8 +263,7 @@ async function generateQuote() {
       address3: document.getElementById("address3").value,
       currency: document.getElementById("currency").value,
       delivery: document.getElementById("delivery").value,
-      // deposit: document.getElementById("deposit").value,
-testdep: document.getElementById("testdep").value,
+      deposit: document.getElementById("deposit").value,
       shipment: document.getElementById("shipment").value,
       signoff: document.getElementById("signoff").value
 
