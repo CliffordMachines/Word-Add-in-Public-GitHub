@@ -1,4 +1,4 @@
-<!-- v1.0.0.31.5 --> 
+<!-- v1.0.0.31.6 --> 
 <!DOCTYPE html>
 <html>
  
@@ -74,29 +74,37 @@
     <select id="currency"></select>
   </div>
 
+ 
  <div class="form-group">
-  <label>Terms of Payment (%)</label>
+  <fieldset>
+   <legend>Terms of Payment (%)</legend>
+   <div style="display: flex; justify-content: center; align-items: center; gap: 5px; width: 100%; box-sizing: border-box;">
   
- <div style="display: flex; gap: 5px; width: 100%; box-sizing: border-box;">
- <div style="flex: 1;"> 
-   <label for="deposit-pct">Deposit %</label><br/>
-   <input type="number" id="deposit-pct" value="35" min="0" max="100" class="pct-input">
-  </div>
- 
- <div style="flex: 1;"> 
-   <label for="shipment-pct">Shipment %</label><br/>
-   <input type="number" id="shipment-pct" value="55" min="0" max="100" class="pct-input">
-  </div>
- 
- <div style="flex: 1;"> 
-   <label for="signoff-pct">Signoff %</label><br/>
-   <input type="number" id="signoff-pct" value="10" min="0" max="100" class="pct-input">
-  </div>
+    <div style="flex: 1;"> 
+     <label for="deposit-pct">Deposit %</label><br/>
+     <input type="number" id="deposit-pct" value="35" min="0" max="100" class="pct-input">
+    </div>
+  
+    <div style="flex: 1;"> 
+     <label for="shipment-pct">Shipment %</label><br/>
+     <input type="number" id="shipment-pct" value="55" min="0" max="100" class="pct-input">
+    </div>
+  
+    <div style="flex: 1;"> 
+     <label for="signoff-pct">Signoff %</label><br/>
+     <input type="number" id="signoff-pct" value="10" min="0" max="100" class="pct-input">
+    </div>
+  
    </div>
- 
- <div id="validation-error" class="validation-error-msg"></div>
+   <div id="validation-error" class="validation-error-msg"></div>
+  </fieldset>  
+
+ </div>
  
 
+
+
+  
   <div class="form-group">
     <label for="delivery">Delivery</label>
     <input id="delivery" required>
