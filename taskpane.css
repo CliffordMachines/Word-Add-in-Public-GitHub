@@ -50,6 +50,9 @@ ul {
     width: 100%; 
     box-sizing: border-box;
 }
+.form-group .payment > div {
+    flex: 1;
+}
 
 /* Unified styling for Inputs and Select Dropdowns */
 .form-group input,
