@@ -1,5 +1,5 @@
 /* global Office, Word */
-// v1.0.0.31 
+// v1.0.0.32 
 // ------------------
 // Data 
 // ------------------
@@ -80,6 +80,9 @@ function initialiseUI() {
   document
     .getElementById("generateQuote")
     .addEventListener("click", generateQuote);
+
+  // Initialize the baseline calculation layout state
+  validatePercentages();
 }
 
 // ------------------
@@ -168,6 +171,46 @@ function formatDateForWord(isoDate) {
   return `${day}${suffix} ${month} ${year}`;
 }
 
+// Intercept data streams to enforce math rules before generation
+function validatePercentages() {
+  const errorDisplay = document.getElementById("validation-error");
+  const actionBtn = document.getElementById("generateQuote");
+  
+  const depositEl = document.getElementById("deposit");
+  const shipmentEl = document.getElementById("shipment");
+  const signoffEl = document.getElementById("signoff");
+
+  const depositVal = depositEl ? (depositEl.valueAsNumber || 0) : 0;
+  const shipmentVal = shipmentEl ? (shipmentEl.valueAsNumber || 0) : 0;
+  const signoffRaw = signoffEl ? signoffEl.value.trim() : "";
+
+  let total = depositVal + shipmentVal;
+
+  if (signoffRaw !== "") {
+    const signoffVal = signoffEl ? (signoffEl.valueAsNumber || 0) : 0;
+    total += signoffVal;
+  }
+
+  if (total !== 100) {
+    if (errorDisplay) {
+      errorDisplay.innerText = "Error: Payment allocations must total exactly 100%.";
+      errorDisplay.className = "status-box error";
+    }
+    if (actionBtn) {
+      actionBtn.disabled = true;
+    }
+    return false;
+  } else {
+    if (errorDisplay) {
+      errorDisplay.innerText = "";
+      errorDisplay.className = "status-box";
+    }
+    if (actionBtn) {
+      actionBtn.disabled = false;
+    }
+    return true;
+  }
+}
 
 function wireLiveUpdates() {
   const fields = document.querySelectorAll(
@@ -178,13 +221,22 @@ function wireLiveUpdates() {
   fields.forEach(field => {
     field.addEventListener("change", scheduleLiveUpdate);
   });
+
+  // Watch standardized payment input controls for live calculations
+  const pctFields = document.querySelectorAll("#deposit, #shipment, #signoff");
+  pctFields.forEach(field => {
+    field.addEventListener("input", () => {
+      if (validatePercentages()) {
+        scheduleLiveUpdate();
+      }
+    });
+  });
 }
 
 
 // IMPORT
 async function importDataFromDoc() {
   await Word.run(async (context) => {
-    // 1. Define the tags we want to pull back from the document
     const tagsToImport = [
       "quoteId", 
       "customerName", 
@@ -196,22 +248,22 @@ async function importDataFromDoc() {
       "cliffordCompany",
       "salesRep",
       "agentEmail",
-      "delivery"
+      "delivery",
+      "deposit",
+      "shipment",
+      "signoff"
     ];
     
     const controlMap = {};
 
-    // 2. Queue up the search and property load for each tag
     tagsToImport.forEach(tag => {
       const controls = context.document.contentControls.getByTag(tag);
       controls.load("items/text"); 
       controlMap[tag] = controls;
     });
 
-    // 3. One sync to grab all data in a single handshake
     await context.sync();
 
-    // 4. Map the document data back to your form inputs
     tagsToImport.forEach(tag => {
       const htmlElement = document.getElementById(tag);
       const docControls = controlMap[tag].items;
@@ -219,36 +271,59 @@ async function importDataFromDoc() {
       if (htmlElement && docControls.length > 0) {
         const docValue = docControls[0].text;
 
-        // Dropdown matching lookup for Sales Rep Name -> Email value transition
         if (tag === "salesRep") {
           const foundRep = salesReps.find(rep => rep.name === docValue);
           if (foundRep) {
             htmlElement.value = foundRep.email;
           }
-        } else {
+        } 
+        // Unpack structured legal string arrays back to plain integers
+        else if (tag === "deposit" || tag === "shipment" || tag === "signoff") {
+          if (!docValue || docValue.trim() === "") {
+            htmlElement.value = "";
+          } else {
+            const match = docValue.match(/\d+/);
+            if (match) {
+              htmlElement.value = match[0];
+            } else {
+              htmlElement.value = "";
+            }
+          }
+        } 
+        else {
           htmlElement.value = docValue;
         }
       }
     });
 
+    validatePercentages();
     console.log("Import complete.");
   });
 }
 
 
 async function generateQuote() {
-  // Prevent re-entry while a sync is already running
-  if (isSyncing) return;
+  if (isSyncing || !validatePercentages()) return;
 
   isSyncing = true;
   liveUpdateEnabled = true;
   showSyncStatus();
 
   try {
+    const depositEl = document.getElementById("deposit");
+    const shipmentEl = document.getElementById("shipment");
+    const signoffEl = document.getElementById("signoff");
+
+    const depositVal = depositEl ? (depositEl.valueAsNumber || 0) : 0;
+    const shipmentVal = shipmentEl ? (shipmentEl.valueAsNumber || 0) : 0;
+    const signoffRaw = signoffEl ? signoffEl.value.trim() : "";
+
+    const formattedDepositText = `${depositVal}% non-refundable deposit with order.`;
+    const formattedShipmentText = `${shipmentVal}% payable prior to shipment.`;
+    const formattedSignoffText = signoffRaw !== "" ? `${signoffEl.valueAsNumber}% payable at project Signoff.` : "";
+
     const data = {
-      quoteDate: formatDateForWord(
-        document.getElementById("quoteDate").value
-      ),
+      quoteDate: formatDateForWord(document.getElementById("quoteDate").value),
       quoteId: document.getElementById("quoteId").value,
       salesRep: document.getElementById("salesRep").selectedOptions[0].text,
       agentEmail: document.getElementById("agentEmail").value,
@@ -259,7 +334,10 @@ async function generateQuote() {
       address2: document.getElementById("address2").value,
       address3: document.getElementById("address3").value,
       currency: document.getElementById("currency").value,
-      delivery: document.getElementById("delivery").value
+      delivery: document.getElementById("delivery").value,
+      deposit: formattedDepositText,
+      shipment: formattedShipmentText,
+      signoff: formattedSignoffText
     };
 
     await Word.run(async (context) => {
@@ -275,20 +353,12 @@ async function generateQuote() {
 
       for (const tag in controlMap) {
         controlMap[tag].items.forEach(cc => {
-          cc.insertText(data[tag], Word.InsertLocation.replace);
+          if (tag === "signoff" && data[tag] === "") {
+            cc.clear(); 
+          } else {
+            cc.insertText(data[tag], Word.InsertLocation.replace);
+          }
         });
       }
 
-      // Set document Title 
-      context.document.properties.title = data.quoteId;
-      context.document.properties.subject = "";
-      context.document.properties.category = "";
-
-      await context.sync();
-    });
-  }
-  finally {
-    isSyncing = false;
-    hideSyncStatus();
-  }
-}
+      // Set document Title
