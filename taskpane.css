@@ -44,6 +44,13 @@ ul {
     margin: 0;
 }
 
+.form-group .payment {
+    display: flex; 
+    gap: 5px; 
+    width: 100%; 
+    box-sizing: border-box;
+}
+
 /* Unified styling for Inputs and Select Dropdowns */
 .form-group input,
 .form-group select {
