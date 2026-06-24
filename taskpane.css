@@ -1,4 +1,4 @@
-/* v 1.0.0.31.3 */
+/* v 1.0.0.34 */
 html,
 body {
     width: 100%;
@@ -77,7 +77,7 @@ ul {
 /* Button row */
 .action-row {
     display: flex;
-    justify-content: center;   /* centers horizontally */
+    justify-content: center;
     align-items: center;
     gap: 8px;
     position: relative;
@@ -126,10 +126,12 @@ b {
     text-align: right;
 }
 
-.validation-error-msg {
-    color: #a80000;
-    font-size: 12px;
+.status-box.error {
+    color: #d02b2b;
+    font-size: 10px;
     font-weight: 600;
     margin-top: 8px;
-    min-height: 18px; /* Prevents layout shifting when error appears */
+    min-height: 12px;
+    text-align: center;
+    display: block; 
 }
