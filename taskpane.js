@@ -1,5 +1,5 @@
 /* global Office, Word */
-// v1.0.0.34 
+// v1.0.0.36 
 // ------------------
 // Data 
 // ------------------
@@ -30,6 +30,7 @@ let isSyncing = false;
 // Entry point
 // ------------------
 Office.onReady((info) => {
+  // Check if the script is running inside Microsoft Word
   if (info.host === Office.HostType.Word) {
     Office.context.document.settings.set("Office.AutoShowTaskpaneWithDocument", true);
     Office.context.document.settings.saveAsync();
@@ -47,9 +48,11 @@ function hideSyncStatus() {
   if (el) el.classList.add("hidden");
 }
 
+
 // ------------------
 // Init
 // ------------------
+
 let updateTimer = null;
 
 function scheduleLiveUpdate() {
@@ -77,8 +80,6 @@ function initialiseUI() {
   document
     .getElementById("generateQuote")
     .addEventListener("click", generateQuote);
-
-  validatePercentages();
 }
 
 // ------------------
@@ -96,12 +97,14 @@ function populateSalesRepDropdown() {
     select.append(opt);
   });
 
+  // Default email
   emailInput.value = select.value;
   delete emailInput.dataset.userEdited;
 }
 
 function populateCompanyDropdown() {
   const select = document.getElementById("cliffordCompany");
+
   select.innerHTML = "";
 
   cliffordCompany.forEach((company, index) => {
@@ -113,10 +116,11 @@ function populateCompanyDropdown() {
 
 function populateCurrency() {
   const select = document.getElementById("currency");
+
   select.innerHTML = "";
 
-  currency.forEach((cur, index) => {
-    const option = new Option(cur.name, cur.name);
+  currency.forEach((currency, index) => {
+    const option = new Option(currency.name, currency.name);
     if (index === 0) option.selected = true;
     select.append(option);
   });
@@ -140,8 +144,10 @@ function wireSalesRepChange() {
   });
 }
 
+
 function setDefaultQuoteDate() {
   const quoteDateInput = document.getElementById("quoteDate");
+
   if (!quoteDateInput.value) {
     quoteDateInput.value = new Date().toISOString().split("T")[0];
   }
@@ -149,6 +155,7 @@ function setDefaultQuoteDate() {
 
 function formatDateForWord(isoDate) {
   const date = new Date(isoDate);
+
   const day = date.getDate();
   const suffix =
     day % 10 === 1 && day !== 11 ? "st" :
@@ -161,45 +168,6 @@ function formatDateForWord(isoDate) {
   return `${day}${suffix} ${month} ${year}`;
 }
 
-function validatePercentages() {
-  const errorDisplay = document.getElementById("validation-error");
-  const actionBtn = document.getElementById("generateQuote");
-  
-  const depositEl = document.getElementById("deposit");
-  const shipmentEl = document.getElementById("shipment");
-  const signoffEl = document.getElementById("signoff");
-
-  const depositVal = depositEl ? (depositEl.valueAsNumber || 0) : 0;
-  const shipmentVal = shipmentEl ? (shipmentEl.valueAsNumber || 0) : 0;
-  const signoffRaw = signoffEl ? signoffEl.value.trim() : "";
-
-  let total = depositVal + shipmentVal;
-
-  if (signoffRaw !== "") {
-    const signoffVal = signoffEl ? (signoffEl.valueAsNumber || 0) : 0;
-    total += signoffVal;
-  }
-
-  if (total !== 100) {
-    if (errorDisplay) {
-      errorDisplay.innerText = "Error: Payment allocations must total exactly 100%.";
-      errorDisplay.className = "status-box error";
-    }
-    if (actionBtn) {
-      actionBtn.disabled = true;
-    }
-    return false;
-  } else {
-    if (errorDisplay) {
-      errorDisplay.innerText = "";
-      errorDisplay.className = "status-box";
-    }
-    if (actionBtn) {
-      actionBtn.disabled = false;
-    }
-    return true;
-  }
-}
 
 function wireLiveUpdates() {
   const fields = document.querySelectorAll(
@@ -210,20 +178,13 @@ function wireLiveUpdates() {
   fields.forEach(field => {
     field.addEventListener("change", scheduleLiveUpdate);
   });
-
-  const pctFields = document.querySelectorAll("#deposit, #shipment, #signoff");
-  pctFields.forEach(field => {
-    field.addEventListener("input", () => {
-      if (validatePercentages()) {
-        scheduleLiveUpdate();
-      }
-    });
-  });
 }
+
 
 // IMPORT
 async function importDataFromDoc() {
   await Word.run(async (context) => {
+    // 1. Define the tags we want to pull back from the document
     const tagsToImport = [
       "quoteId", 
       "customerName", 
@@ -243,14 +204,17 @@ async function importDataFromDoc() {
     
     const controlMap = {};
 
+    // 2. Queue up the search and property load for each tag
     tagsToImport.forEach(tag => {
       const controls = context.document.contentControls.getByTag(tag);
       controls.load("items/text"); 
       controlMap[tag] = controls;
     });
 
+    // 3. One sync to grab all data in a single handshake
     await context.sync();
 
+    // 4. Map the document data back to your form inputs
     tagsToImport.forEach(tag => {
       const htmlElement = document.getElementById(tag);
       const docControls = controlMap[tag].items;
@@ -258,77 +222,61 @@ async function importDataFromDoc() {
       if (htmlElement && docControls.length > 0) {
         const docValue = docControls[0].text;
 
+        // Dropdown matching lookup for Sales Rep Name -> Email value transition
         if (tag === "salesRep") {
           const foundRep = salesReps.find(rep => rep.name === docValue);
           if (foundRep) {
             htmlElement.value = foundRep.email;
           }
-        } 
-        else if (tag === "deposit" || tag === "shipment" || tag === "signoff") {
-          if (!docValue || docValue.trim() === "") {
-            htmlElement.value = "";
-          } else {
-            const match = docValue.match(/\d+/);
-            if (match) {
-              htmlElement.value = match[0];
-            } else {
-              htmlElement.value = "";
-            }
-          }
-        } 
-        else {
+        } else {
           htmlElement.value = docValue;
         }
       }
     });
 
-    validatePercentages();
     console.log("Import complete.");
   });
 }
 
-// GENERATE
+
 async function generateQuote() {
-  if (isSyncing || !validatePercentages()) return;
+  // Prevent re-entry while a sync is already running
+  if (isSyncing) return;
 
   isSyncing = true;
   liveUpdateEnabled = true;
   showSyncStatus();
 
-  try {
-    const depositEl = document.getElementById("deposit");
-    const shipmentEl = document.getElementById("shipment");
-    const signoffEl = document.getElementById("signoff");
+ try {
+  // 1. Pull the payment calculations up HERE (before creating the object)
+  const depositEl = document.getElementById("deposit");
+  const shipmentEl = document.getElementById("shipment");
+  const signoffEl = document.getElementById("signoff");
 
-    const depositVal = depositEl ? (depositEl.valueAsNumber || 0) : 0;
-    const shipmentVal = shipmentEl ? (shipmentEl.valueAsNumber || 0) : 0;
-    const signoffRaw = signoffEl ? signoffEl.value.trim() : "";
+  const depositVal = depositEl ? (depositEl.valueAsNumber || 0) : 0;
+  const shipmentVal = shipmentEl ? (shipmentEl.valueAsNumber || 0) : 0;
+  const signoffVal = (signoffEl && !isNaN(signoffEl.valueAsNumber)) ? signoffEl.valueAsNumber : "";
 
-    const formattedDepositText = `${depositVal}% non-refundable deposit with order.`;
-    const formattedShipmentText = `${shipmentVal}% payable prior to shipment.`;
-    const formattedSignoffText = signoffRaw !== "" ? `${signoffEl.valueAsNumber}% payable at project Signoff.` : "";
-
-    const data = {
-      quoteDate: formatDateForWord(document.getElementById("quoteDate").value),
-      quoteId: document.getElementById("quoteId").value,
-      salesRep: document.getElementById("salesRep").selectedOptions[0].text,
-      agentEmail: document.getElementById("agentEmail").value,
-      cliffordCompany: document.getElementById("cliffordCompany").value,
-      customerCompany: document.getElementById("customerCompany").value,
-      customerName: document.getElementById("customerName").value,
-      address1: document.getElementById("address1").value,
-      address2: document.getElementById("address2").value,
-      address3: document.getElementById("address3").value,
-      currency: document.getElementById("currency").value,
-      delivery: document.getElementById("delivery").value,
-      deposit: formattedDepositText,
-      shipment: formattedShipmentText,
-      signoff: formattedSignoffText
-    };
-
-// DEPOSIT DEBUG
-console.log("DEPOSIT TEXT:", data.deposit); 
-alert("Deposit text is: " + data.deposit);
+  // 2. Now construct your clean, valid data object
+  const data = {
+    quoteDate: formatDateForWord(
+      document.getElementById("quoteDate").value
+    ),
+    quoteId: document.getElementById("quoteId").value,
+    salesRep: document.getElementById("salesRep").selectedOptions[0].text,
+    agentEmail: document.getElementById("agentEmail").value,
+    cliffordCompany: document.getElementById("cliffordCompany").value,
+    customerCompany: document.getElementById("customerCompany").value,
+    customerName: document.getElementById("customerName").value,
+    address1: document.getElementById("address1").value,
+    address2: document.getElementById("address2").value,
+    address3: document.getElementById("address3").value,
+    currency: document.getElementById("currency").value,
+    delivery: document.getElementById("delivery").value,
+    deposit: depositVal,
+    shipment: shipmentVal,
+    signoff: signoffVal
+  };
 
     await Word.run(async (context) => {
       const controlMap = {};
@@ -343,14 +291,11 @@ alert("Deposit text is: " + data.deposit);
 
       for (const tag in controlMap) {
         controlMap[tag].items.forEach(cc => {
-          if (tag === "signoff" && data[tag] === "") {
-            cc.clear(); 
-          } else {
-            cc.insertText(data[tag], Word.InsertLocation.replace);
-          }
+          cc.insertText(data[tag], Word.InsertLocation.replace);
         });
       }
 
+      // Set document Title 
       context.document.properties.title = data.quoteId;
       context.document.properties.subject = "";
       context.document.properties.category = "";
