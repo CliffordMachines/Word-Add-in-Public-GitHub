@@ -1,5 +1,5 @@
 /* global Office, Word */
-// v1.0.0.33
+// v1.0.0.34
 // ------------------
 // Data 
 // ------------------
@@ -77,6 +77,9 @@ function initialiseUI() {
   document
     .getElementById("generateQuote")
     .addEventListener("click", generateQuote);
+
+  // SANITY FIX: Check percentages immediately on startup
+  validatePercentagesSubtle();
 }
 
 // ------------------
@@ -160,15 +163,19 @@ function formatDateForWord(isoDate) {
 }
 
 function wireLiveUpdates() {
-  // Added payment input element IDs to the live change listeners
   const fields = document.querySelectorAll(
     "#quoteDate, #quoteId, #salesRep, #agentEmail, #cliffordCompany, " +
     "#customerCompany, #customerName, #address1, #address2, #address3, " +
-    "#currency, #delivery, #deposit, #shipment, #signoff"
+    "#currency, #delivery"
   );
 
   fields.forEach(field => {
     field.addEventListener("change", scheduleLiveUpdate);
+  });
+
+  const pctFields = document.querySelectorAll("#deposit, #shipment, #signoff");
+  pctFields.forEach(field => {
+    field.addEventListener("blur", validatePercentagesSubtle);
     field.addEventListener("input", scheduleLiveUpdate);
   });
 }
@@ -216,7 +223,6 @@ async function importDataFromDoc() {
             htmlElement.value = foundRep.email;
           }
         } 
-        // Strips everything except digits when pulling back into number fields
         else if (tag === "deposit" || tag === "shipment" || tag === "signoff") {
           if (!docValue || docValue.trim() === "") {
             htmlElement.value = "";
@@ -231,10 +237,43 @@ async function importDataFromDoc() {
       }
     });
 
+    // Run verification cycle after importing to set base status state
+    validatePercentagesSubtle();
     console.log("Import complete.");
   });
 }
 
+// PERCENT VALIDATION ON FOCUS SHIFT
+function validatePercentagesSubtle() {
+  const errorDisplay = document.getElementById("validation-error");
+  
+  const depositEl = document.getElementById("deposit");
+  const shipmentEl = document.getElementById("shipment");
+  const signoffEl = document.getElementById("signoff");
+
+  const depositVal = depositEl ? (depositEl.valueAsNumber || 0) : 0;
+  const shipmentVal = shipmentEl ? (shipmentEl.valueAsNumber || 0) : 0;
+  const signoffRaw = signoffEl ? signoffEl.value.trim() : "";
+
+  let total = depositVal + shipmentVal;
+
+  if (signoffRaw !== "") {
+    const signoffVal = signoffEl ? (signoffEl.valueAsNumber || 0) : 0;
+    total += signoffVal;
+  }
+
+  if (total !== 100) {
+    if (errorDisplay) {
+      errorDisplay.innerText = `Total allocations equal ${total}%. They should ideally equal exactly 100%.`;
+      errorDisplay.className = "status-box error";
+    }
+  } else {
+    if (errorDisplay) {
+      errorDisplay.innerText = "";
+      errorDisplay.className = "status-box";
+    }
+  }
+}
 
 // GENERATE
 async function generateQuote() {
@@ -249,11 +288,8 @@ async function generateQuote() {
     const shipmentVal = document.getElementById("shipment").value || "0";
     const signoffRaw = document.getElementById("signoff").value.trim();
 
-    // 1. Build strings with standard unicode bullets and tabs
     const formattedDepositText = `\u2022\t${depositVal}% non-refundable deposit with order.`;
     const formattedShipmentText = `\u2022\t${shipmentVal}% payable prior to shipment.`;
-    
-    // 2. If signoff is empty, set it to a zero-width space instead of a bullet sentence
     const formattedSignoffText = signoffRaw !== "" ? `\u2022\t${signoffRaw}% payable at project Signoff.` : "\u200B";
 
     const data = {
@@ -287,7 +323,6 @@ async function generateQuote() {
 
       for (const tag in controlMap) {
         controlMap[tag].items.forEach(cc => {
-          // 3. Safety Lock: Always use replace so the control container is never deleted!
           cc.insertText(data[tag], Word.InsertLocation.replace);
         });
       }
