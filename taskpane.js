@@ -1,5 +1,5 @@
 /* global Office, Word */
-// v1.0.0.31.11
+// v1.0.0.32
 // ------------------
 // Data 
 // ------------------
@@ -30,7 +30,6 @@ let isSyncing = false;
 // Entry point
 // ------------------
 Office.onReady((info) => {
-  // Check if the script is running inside Microsoft Word
   if (info.host === Office.HostType.Word) {
     Office.context.document.settings.set("Office.AutoShowTaskpaneWithDocument", true);
     Office.context.document.settings.saveAsync();
@@ -48,11 +47,9 @@ function hideSyncStatus() {
   if (el) el.classList.add("hidden");
 }
 
-
 // ------------------
 // Init
 // ------------------
-
 let updateTimer = null;
 
 function scheduleLiveUpdate() {
@@ -97,14 +94,12 @@ function populateSalesRepDropdown() {
     select.append(opt);
   });
 
-  // Default email
   emailInput.value = select.value;
   delete emailInput.dataset.userEdited;
 }
 
 function populateCompanyDropdown() {
   const select = document.getElementById("cliffordCompany");
-
   select.innerHTML = "";
 
   cliffordCompany.forEach((company, index) => {
@@ -116,7 +111,6 @@ function populateCompanyDropdown() {
 
 function populateCurrency() {
   const select = document.getElementById("currency");
-
   select.innerHTML = "";
 
   currency.forEach((currency, index) => {
@@ -144,10 +138,8 @@ function wireSalesRepChange() {
   });
 }
 
-
 function setDefaultQuoteDate() {
   const quoteDateInput = document.getElementById("quoteDate");
-
   if (!quoteDateInput.value) {
     quoteDateInput.value = new Date().toISOString().split("T")[0];
   }
@@ -155,7 +147,6 @@ function setDefaultQuoteDate() {
 
 function formatDateForWord(isoDate) {
   const date = new Date(isoDate);
-
   const day = date.getDate();
   const suffix =
     day % 10 === 1 && day !== 11 ? "st" :
@@ -168,23 +159,23 @@ function formatDateForWord(isoDate) {
   return `${day}${suffix} ${month} ${year}`;
 }
 
-
 function wireLiveUpdates() {
+  // Added payment input element IDs to the live change listeners
   const fields = document.querySelectorAll(
     "#quoteDate, #quoteId, #salesRep, #agentEmail, #cliffordCompany, " +
-    "#customerCompany, #customerName, #address1, #address2, #address3, #currency, #delivery"
+    "#customerCompany, #customerName, #address1, #address2, #address3, " +
+    "#currency, #delivery, #deposit, #shipment, #signoff"
   );
 
   fields.forEach(field => {
     field.addEventListener("change", scheduleLiveUpdate);
+    field.addEventListener("input", scheduleLiveUpdate);
   });
 }
-
 
 // IMPORT
 async function importDataFromDoc() {
   await Word.run(async (context) => {
-    // 1. Define the tags we want to pull back from the document
     const tagsToImport = [
       "quoteId", 
       "customerName", 
@@ -204,17 +195,14 @@ async function importDataFromDoc() {
     
     const controlMap = {};
 
-    // 2. Queue up the search and property load for each tag
     tagsToImport.forEach(tag => {
       const controls = context.document.contentControls.getByTag(tag);
       controls.load("items/text"); 
       controlMap[tag] = controls;
     });
 
-    // 3. One sync to grab all data in a single handshake
     await context.sync();
 
-    // 4. Map the document data back to your form inputs
     tagsToImport.forEach(tag => {
       const htmlElement = document.getElementById(tag);
       const docControls = controlMap[tag].items;
@@ -222,13 +210,22 @@ async function importDataFromDoc() {
       if (htmlElement && docControls.length > 0) {
         const docValue = docControls[0].text;
 
-        // Dropdown matching lookup for Sales Rep Name -> Email value transition
         if (tag === "salesRep") {
           const foundRep = salesReps.find(rep => rep.name === docValue);
           if (foundRep) {
             htmlElement.value = foundRep.email;
           }
-        } else {
+        } 
+        // Strips everything except digits when pulling back into number fields
+        else if (tag === "deposit" || tag === "shipment" || tag === "signoff") {
+          if (!docValue || docValue.trim() === "") {
+            htmlElement.value = "";
+          } else {
+            const match = docValue.match(/\d+/);
+            htmlElement.value = match ? match[0] : "";
+          }
+        } 
+        else {
           htmlElement.value = docValue;
         }
       }
@@ -238,9 +235,8 @@ async function importDataFromDoc() {
   });
 }
 
-
+// GENERATE
 async function generateQuote() {
-  // Prevent re-entry while a sync is already running
   if (isSyncing) return;
 
   isSyncing = true;
@@ -248,10 +244,18 @@ async function generateQuote() {
   showSyncStatus();
 
   try {
+    // Read current raw screen values safely
+    const depositVal = document.getElementById("deposit").value || "0";
+    const shipmentVal = document.getElementById("shipment").value || "0";
+    const signoffRaw = document.getElementById("signoff").value.trim();
+
+    // Assemble dynamic legal phrases
+    const formattedDepositText = `${depositVal}% non-refundable deposit with order.`;
+    const formattedShipmentText = `${shipmentVal}% payable prior to shipment.`;
+    const formattedSignoffText = signoffRaw !== "" ? `${signoffRaw}% payable at project Signoff.` : "";
+
     const data = {
-      quoteDate: formatDateForWord(
-        document.getElementById("quoteDate").value
-      ),
+      quoteDate: formatDateForWord(document.getElementById("quoteDate").value),
       quoteId: document.getElementById("quoteId").value,
       salesRep: document.getElementById("salesRep").selectedOptions[0].text,
       agentEmail: document.getElementById("agentEmail").value,
@@ -263,10 +267,11 @@ async function generateQuote() {
       address3: document.getElementById("address3").value,
       currency: document.getElementById("currency").value,
       delivery: document.getElementById("delivery").value,
-      deposit: document.getElementById("deposit").value,
-      shipment: document.getElementById("shipment").value,
-      signoff: document.getElementById("signoff").value
-
+      
+      // Map the beautiful text lines directly to the Word content control tags
+      deposit: formattedDepositText,
+      shipment: formattedShipmentText,
+      signoff: formattedSignoffText
     };
 
     await Word.run(async (context) => {
@@ -282,7 +287,12 @@ async function generateQuote() {
 
       for (const tag in controlMap) {
         controlMap[tag].items.forEach(cc => {
-          cc.insertText(data[tag], Word.InsertLocation.replace);
+          // If the signoff string evaluates to empty, completely clear its placeholder in Word
+          if (tag === "signoff" && data[tag] === "") {
+            cc.clear();
+          } else {
+            cc.insertText(data[tag], Word.InsertLocation.replace);
+          }
         });
       }
 
