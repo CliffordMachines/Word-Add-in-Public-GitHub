@@ -1,4 +1,4 @@
-/* v 1.0.0.31.2 */
+/* v 1.0.0.31.3 */
 html,
 body {
     width: 100%;
@@ -49,9 +49,12 @@ ul {
     gap: 5px; 
     width: 100%; 
     box-sizing: border-box;
+    justify-content: center; 
+    align-items: center;
 }
 .form-group .payment > div {
     flex: 1;
+    padding-left:5px;
 }
 
 /* Unified styling for Inputs and Select Dropdowns */
