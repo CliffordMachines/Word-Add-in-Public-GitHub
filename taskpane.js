@@ -1,5 +1,5 @@
 /* global Office, Word */
-// v1.0.0.31.7
+// v1.0.0.31.8
 // ------------------
 // Data 
 // ------------------
@@ -235,7 +235,7 @@ async function importDataFromDoc() {
     });
 
     console.log("Import complete.");
-console.log(testdep);
+
 console.log(shipment);
 console.log(signoff);
   });
