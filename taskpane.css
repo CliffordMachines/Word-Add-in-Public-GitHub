@@ -1,4 +1,4 @@
-/* v 1.0.0.31.1 */
+/* v 1.0.0.31.2 */
 html,
 body {
     width: 100%;
@@ -36,6 +36,12 @@ ul {
     margin-bottom: 4px;
     font-weight: 600;
     color: #6D6B6B; /* Consolidated label and legend color here */
+}
+
+.form-group fieldset {
+    border: none; 
+    padding: 0; 
+    margin: 0;
 }
 
 /* Unified styling for Inputs and Select Dropdowns */
