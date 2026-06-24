@@ -294,4 +294,4 @@ testdep: document.getElementById("testdep").value,
     isSyncing = false;
     hideSyncStatus();
   }
-
+}
