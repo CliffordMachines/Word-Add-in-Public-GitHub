@@ -128,10 +128,10 @@ b {
 
 .status-box.error {
     color: #d02b2b;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 600;
     margin-top: 8px;
-    min-height: 12px;
+    min-height: 16px;
     text-align: center;
     display: block; 
 }
