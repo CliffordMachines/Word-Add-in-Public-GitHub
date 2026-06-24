@@ -1,5 +1,5 @@
 /* global Office, Word */
-// v1.0.0.32
+// v1.0.0.33
 // ------------------
 // Data 
 // ------------------
@@ -235,6 +235,7 @@ async function importDataFromDoc() {
   });
 }
 
+
 // GENERATE
 async function generateQuote() {
   if (isSyncing) return;
@@ -244,15 +245,16 @@ async function generateQuote() {
   showSyncStatus();
 
   try {
-    // Read current raw screen values safely
     const depositVal = document.getElementById("deposit").value || "0";
     const shipmentVal = document.getElementById("shipment").value || "0";
     const signoffRaw = document.getElementById("signoff").value.trim();
 
-    // Assemble dynamic legal phrases
-    const formattedDepositText = `${depositVal}% non-refundable deposit with order.`;
-    const formattedShipmentText = `${shipmentVal}% payable prior to shipment.`;
-    const formattedSignoffText = signoffRaw !== "" ? `${signoffRaw}% payable at project Signoff.` : "";
+    // 1. Build the text line with explicit unicode bullet points and tabs (\t)
+    const formattedDepositText = `\u2022\t${depositVal}% non-refundable deposit with order.`;
+    const formattedShipmentText = `\u2022\t${shipmentVal}% payable prior to shipment.`;
+    
+    // 2. Only attach the bullet prefix to signoff if it actually has data!
+    const formattedSignoffText = signoffRaw !== "" ? `\u2022\t${signoffRaw}% payable at project Signoff.` : "";
 
     const data = {
       quoteDate: formatDateForWord(document.getElementById("quoteDate").value),
@@ -267,8 +269,6 @@ async function generateQuote() {
       address3: document.getElementById("address3").value,
       currency: document.getElementById("currency").value,
       delivery: document.getElementById("delivery").value,
-      
-      // Map the beautiful text lines directly to the Word content control tags
       deposit: formattedDepositText,
       shipment: formattedShipmentText,
       signoff: formattedSignoffText
@@ -287,9 +287,11 @@ async function generateQuote() {
 
       for (const tag in controlMap) {
         controlMap[tag].items.forEach(cc => {
-          // If the signoff string evaluates to empty, completely clear its placeholder in Word
+          // 3. Smart Omission Execution
           if (tag === "signoff" && data[tag] === "") {
-            cc.clear();
+            // Wipes out the placeholder text AND deletes the empty line block cleanly
+            cc.clear(); 
+            cc.delete(false); 
           } else {
             cc.insertText(data[tag], Word.InsertLocation.replace);
           }
