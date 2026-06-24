@@ -1,5 +1,5 @@
 /* global Office, Word */
-// v1.0.0.36 
+// v1.0.0.31.2
 // ------------------
 // Data 
 // ------------------
@@ -196,10 +196,7 @@ async function importDataFromDoc() {
       "cliffordCompany",
       "salesRep",
       "agentEmail",
-      "delivery",
-      "deposit",
-      "shipment",
-      "signoff"
+      "delivery"
     ];
     
     const controlMap = {};
@@ -247,36 +244,23 @@ async function generateQuote() {
   liveUpdateEnabled = true;
   showSyncStatus();
 
- try {
-  // 1. Pull the payment calculations up HERE (before creating the object)
-  const depositEl = document.getElementById("deposit");
-  const shipmentEl = document.getElementById("shipment");
-  const signoffEl = document.getElementById("signoff");
-
-  const depositVal = depositEl ? (depositEl.valueAsNumber || 0) : 0;
-  const shipmentVal = shipmentEl ? (shipmentEl.valueAsNumber || 0) : 0;
-  const signoffVal = (signoffEl && !isNaN(signoffEl.valueAsNumber)) ? signoffEl.valueAsNumber : "";
-
-  // 2. Now construct your clean, valid data object
-  const data = {
-    quoteDate: formatDateForWord(
-      document.getElementById("quoteDate").value
-    ),
-    quoteId: document.getElementById("quoteId").value,
-    salesRep: document.getElementById("salesRep").selectedOptions[0].text,
-    agentEmail: document.getElementById("agentEmail").value,
-    cliffordCompany: document.getElementById("cliffordCompany").value,
-    customerCompany: document.getElementById("customerCompany").value,
-    customerName: document.getElementById("customerName").value,
-    address1: document.getElementById("address1").value,
-    address2: document.getElementById("address2").value,
-    address3: document.getElementById("address3").value,
-    currency: document.getElementById("currency").value,
-    delivery: document.getElementById("delivery").value,
-    deposit: depositVal,
-    shipment: shipmentVal,
-    signoff: signoffVal
-  };
+  try {
+    const data = {
+      quoteDate: formatDateForWord(
+        document.getElementById("quoteDate").value
+      ),
+      quoteId: document.getElementById("quoteId").value,
+      salesRep: document.getElementById("salesRep").selectedOptions[0].text,
+      agentEmail: document.getElementById("agentEmail").value,
+      cliffordCompany: document.getElementById("cliffordCompany").value,
+      customerCompany: document.getElementById("customerCompany").value,
+      customerName: document.getElementById("customerName").value,
+      address1: document.getElementById("address1").value,
+      address2: document.getElementById("address2").value,
+      address3: document.getElementById("address3").value,
+      currency: document.getElementById("currency").value,
+      delivery: document.getElementById("delivery").value
+    };
 
     await Word.run(async (context) => {
       const controlMap = {};
@@ -294,11 +278,6 @@ async function generateQuote() {
           cc.insertText(data[tag], Word.InsertLocation.replace);
         });
       }
-
-      // Set document Title 
-      context.document.properties.title = data.quoteId;
-      context.document.properties.subject = "";
-      context.document.properties.category = "";
 
       await context.sync();
     });
