@@ -1,5 +1,5 @@
 /* global Office, Word */
-// v1.0.0.31.10
+// v1.0.0.31.11
 // ------------------
 // Data 
 // ------------------
@@ -294,4 +294,4 @@ testdep: document.getElementById("testdep").value,
     isSyncing = false;
     hideSyncStatus();
   }
-}
+
