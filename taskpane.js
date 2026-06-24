@@ -1,5 +1,5 @@
 /* global Office, Word */
-// v1.0.0.30 
+// v1.0.0.31 
 // ------------------
 // Data 
 // ------------------
@@ -14,8 +14,7 @@ const salesReps = [
 
 const cliffordCompany = [
   { name: "Clifford Machines and Technology" },
-  { name: "Clifford North America" },
-  { name: "AWT" }
+  { name: "Clifford North America" }
 ];
 
 const currency = [
