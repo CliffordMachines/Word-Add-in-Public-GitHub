@@ -1,5 +1,5 @@
 /* global Office, Word */
-// v1.0.0.31.8
+// v1.0.0.31.9
 // ------------------
 // Data 
 // ------------------
@@ -235,9 +235,6 @@ async function importDataFromDoc() {
     });
 
     console.log("Import complete.");
-
-console.log(shipment);
-console.log(signoff);
   });
 }
 
@@ -266,7 +263,7 @@ async function generateQuote() {
       address3: document.getElementById("address3").value,
       currency: document.getElementById("currency").value,
       delivery: document.getElementById("delivery").value,
-      deposit: document.getElementById("deposit").value,
+      // deposit: document.getElementById("deposit").value,
 testdep: document.getElementById("tempdep").value,
       shipment: document.getElementById("shipment").value,
       signoff: document.getElementById("signoff").value
