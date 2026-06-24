@@ -267,7 +267,7 @@ async function generateQuote() {
       currency: document.getElementById("currency").value,
       delivery: document.getElementById("delivery").value,
       deposit: document.getElementById("deposit").value,
-testdep: document.getElementById("quoteId").value,
+testdep: document.getElementById("tempdep").value,
       shipment: document.getElementById("shipment").value,
       signoff: document.getElementById("signoff").value
 
