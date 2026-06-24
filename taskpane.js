@@ -196,7 +196,10 @@ async function importDataFromDoc() {
       "cliffordCompany",
       "salesRep",
       "agentEmail",
-      "delivery"
+      "delivery", 
+      "deposit",
+      "shipment",
+      "signoff"
     ];
     
     const controlMap = {};
@@ -259,7 +262,11 @@ async function generateQuote() {
       address2: document.getElementById("address2").value,
       address3: document.getElementById("address3").value,
       currency: document.getElementById("currency").value,
-      delivery: document.getElementById("delivery").value
+      delivery: document.getElementById("delivery").value,
+      deposit: document.getElementById("deposit").value,
+      shipment: document.getElementById("shipment").value,
+      signoff: document.getElementById("signoff").value
+
     };
 
     await Word.run(async (context) => {
