@@ -1,4 +1,4 @@
-/* v 1.0.0.31 */
+/* v 1.0.0.31.1 */
 html,
 body {
     width: 100%;
@@ -30,11 +30,12 @@ ul {
     flex-direction: column;
 }
 
-.form-group label {
+.form-group label,  
+.form-group legend {
     font-size: 12px;
     margin-bottom: 4px;
     font-weight: 600;
-    color: #6D6B6B; /* Consolidated label color here */
+    color: #6D6B6B; /* Consolidated label and legend color here */
 }
 
 /* Unified styling for Inputs and Select Dropdowns */
