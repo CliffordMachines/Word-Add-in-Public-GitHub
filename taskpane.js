@@ -235,7 +235,7 @@ async function importDataFromDoc() {
     });
 
     console.log("Import complete.");
-console.log("test DEPOSIT TEXT:", data.testdep);
+//console.log("test DEPOSIT TEXT:", data.testdep);
 console.log("SHIPMENT TEXT:", data.shipment);
 console.log("SIGNOFF TEXT:", data.signoff);
   });
