@@ -249,12 +249,12 @@ async function generateQuote() {
     const shipmentVal = document.getElementById("shipment").value || "0";
     const signoffRaw = document.getElementById("signoff").value.trim();
 
-    // 1. Build the text line with explicit unicode bullet points and tabs (\t)
+    // 1. Build strings with standard unicode bullets and tabs
     const formattedDepositText = `\u2022\t${depositVal}% non-refundable deposit with order.`;
     const formattedShipmentText = `\u2022\t${shipmentVal}% payable prior to shipment.`;
     
-    // 2. Only attach the bullet prefix to signoff if it actually has data!
-    const formattedSignoffText = signoffRaw !== "" ? `\u2022\t${signoffRaw}% payable at project Signoff.` : "";
+    // 2. If signoff is empty, set it to a zero-width space instead of a bullet sentence
+    const formattedSignoffText = signoffRaw !== "" ? `\u2022\t${signoffRaw}% payable at project Signoff.` : "\u200B";
 
     const data = {
       quoteDate: formatDateForWord(document.getElementById("quoteDate").value),
@@ -287,14 +287,8 @@ async function generateQuote() {
 
       for (const tag in controlMap) {
         controlMap[tag].items.forEach(cc => {
-          // 3. Smart Omission Execution
-          if (tag === "signoff" && data[tag] === "") {
-            // Wipes out the placeholder text AND deletes the empty line block cleanly
-            cc.clear(); 
-            cc.delete(false); 
-          } else {
-            cc.insertText(data[tag], Word.InsertLocation.replace);
-          }
+          // 3. Safety Lock: Always use replace so the control container is never deleted!
+          cc.insertText(data[tag], Word.InsertLocation.replace);
         });
       }
 
