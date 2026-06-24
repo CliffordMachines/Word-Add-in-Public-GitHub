@@ -1,5 +1,5 @@
 /* global Office, Word */
-// v1.0.0.31.9
+// v1.0.0.31.10
 // ------------------
 // Data 
 // ------------------
@@ -264,7 +264,7 @@ async function generateQuote() {
       currency: document.getElementById("currency").value,
       delivery: document.getElementById("delivery").value,
       // deposit: document.getElementById("deposit").value,
-testdep: document.getElementById("tempdep").value,
+testdep: document.getElementById("testdep").value,
       shipment: document.getElementById("shipment").value,
       signoff: document.getElementById("signoff").value
 
