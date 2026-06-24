@@ -1,5 +1,5 @@
 /* global Office, Word */
-// v1.0.0.31.3
+// v1.0.0.31.4
 // ------------------
 // Data 
 // ------------------
@@ -197,7 +197,7 @@ async function importDataFromDoc() {
       "salesRep",
       "agentEmail",
       "delivery", 
-      "deposit",
+      "testdep",
       "shipment",
       "signoff"
     ];
@@ -235,7 +235,7 @@ async function importDataFromDoc() {
     });
 
     console.log("Import complete.");
-console.log("DEPOSIT TEXT:", data.deposit);
+console.log("test DEPOSIT TEXT:", data.testdep);
 console.log("SHIPMENT TEXT:", data.shipment);
 console.log("SIGNOFF TEXT:", data.signoff);
   });
