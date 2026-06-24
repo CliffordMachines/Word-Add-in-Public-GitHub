@@ -1,5 +1,5 @@
 /* global Office, Word */
-// v1.0.0.33 
+// v1.0.0.34 
 // ------------------
 // Data 
 // ------------------
@@ -325,6 +325,10 @@ async function generateQuote() {
       shipment: formattedShipmentText,
       signoff: formattedSignoffText
     };
+
+// DEPOSIT DEBUG
+console.log("DEPOSIT TEXT:", data.deposit); 
+alert("Deposit text is: " + data.deposit);
 
     await Word.run(async (context) => {
       const controlMap = {};
