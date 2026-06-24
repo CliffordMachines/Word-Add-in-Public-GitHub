@@ -1,5 +1,5 @@
 /* global Office, Word */
-// v1.0.0.32 
+// v1.0.0.33 
 // ------------------
 // Data 
 // ------------------
@@ -30,7 +30,6 @@ let isSyncing = false;
 // Entry point
 // ------------------
 Office.onReady((info) => {
-  // Check if the script is running inside Microsoft Word
   if (info.host === Office.HostType.Word) {
     Office.context.document.settings.set("Office.AutoShowTaskpaneWithDocument", true);
     Office.context.document.settings.saveAsync();
@@ -48,11 +47,9 @@ function hideSyncStatus() {
   if (el) el.classList.add("hidden");
 }
 
-
 // ------------------
 // Init
 // ------------------
-
 let updateTimer = null;
 
 function scheduleLiveUpdate() {
@@ -81,7 +78,6 @@ function initialiseUI() {
     .getElementById("generateQuote")
     .addEventListener("click", generateQuote);
 
-  // Initialize the baseline calculation layout state
   validatePercentages();
 }
 
@@ -100,14 +96,12 @@ function populateSalesRepDropdown() {
     select.append(opt);
   });
 
-  // Default email
   emailInput.value = select.value;
   delete emailInput.dataset.userEdited;
 }
 
 function populateCompanyDropdown() {
   const select = document.getElementById("cliffordCompany");
-
   select.innerHTML = "";
 
   cliffordCompany.forEach((company, index) => {
@@ -119,11 +113,10 @@ function populateCompanyDropdown() {
 
 function populateCurrency() {
   const select = document.getElementById("currency");
-
   select.innerHTML = "";
 
-  currency.forEach((currency, index) => {
-    const option = new Option(currency.name, currency.name);
+  currency.forEach((cur, index) => {
+    const option = new Option(cur.name, cur.name);
     if (index === 0) option.selected = true;
     select.append(option);
   });
@@ -147,10 +140,8 @@ function wireSalesRepChange() {
   });
 }
 
-
 function setDefaultQuoteDate() {
   const quoteDateInput = document.getElementById("quoteDate");
-
   if (!quoteDateInput.value) {
     quoteDateInput.value = new Date().toISOString().split("T")[0];
   }
@@ -158,7 +149,6 @@ function setDefaultQuoteDate() {
 
 function formatDateForWord(isoDate) {
   const date = new Date(isoDate);
-
   const day = date.getDate();
   const suffix =
     day % 10 === 1 && day !== 11 ? "st" :
@@ -171,7 +161,6 @@ function formatDateForWord(isoDate) {
   return `${day}${suffix} ${month} ${year}`;
 }
 
-// Intercept data streams to enforce math rules before generation
 function validatePercentages() {
   const errorDisplay = document.getElementById("validation-error");
   const actionBtn = document.getElementById("generateQuote");
@@ -222,7 +211,6 @@ function wireLiveUpdates() {
     field.addEventListener("change", scheduleLiveUpdate);
   });
 
-  // Watch standardized payment input controls for live calculations
   const pctFields = document.querySelectorAll("#deposit, #shipment, #signoff");
   pctFields.forEach(field => {
     field.addEventListener("input", () => {
@@ -232,7 +220,6 @@ function wireLiveUpdates() {
     });
   });
 }
-
 
 // IMPORT
 async function importDataFromDoc() {
@@ -277,7 +264,6 @@ async function importDataFromDoc() {
             htmlElement.value = foundRep.email;
           }
         } 
-        // Unpack structured legal string arrays back to plain integers
         else if (tag === "deposit" || tag === "shipment" || tag === "signoff") {
           if (!docValue || docValue.trim() === "") {
             htmlElement.value = "";
@@ -301,7 +287,7 @@ async function importDataFromDoc() {
   });
 }
 
-
+// GENERATE
 async function generateQuote() {
   if (isSyncing || !validatePercentages()) return;
 
@@ -361,4 +347,15 @@ async function generateQuote() {
         });
       }
 
-      // Set document Title
+      context.document.properties.title = data.quoteId;
+      context.document.properties.subject = "";
+      context.document.properties.category = "";
+
+      await context.sync();
+    });
+  }
+  finally {
+    isSyncing = false;
+    hideSyncStatus();
+  }
+}
