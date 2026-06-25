@@ -264,7 +264,7 @@ function validatePercentagesSubtle() {
 
   if (total !== 100) {
     if (errorDisplay) {
-      errorDisplay.innerText = `Total allocations equal ${total}%. They should ideally equal exactly 100%.`;
+      errorDisplay.innerText = `Houston, we have a math problem! Totals equal ${total}%. They should equal 100%.`;
       errorDisplay.className = "status-box error";
     }
   } else {
