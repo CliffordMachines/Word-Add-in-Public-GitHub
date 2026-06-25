@@ -1,5 +1,5 @@
 /* global Office, Word */
-// v1.0.0.34
+// v1.0.0.35
 // ------------------
 // Data 
 // ------------------
@@ -24,8 +24,8 @@ const currency = [
 ];
 
 const factory = [
-  { name: "Canton, OH, USA" },
-  { name: "Pietermaritzburg, South Africa" }
+  { name: "Pietermaritzburg, South Africa" },
+  { name: "Canton, OH, USA" }
 ];
 
 let liveUpdateEnabled = false;
@@ -70,6 +70,7 @@ function initialiseUI() {
   populateSalesRepDropdown();
   populateCompanyDropdown();
   populateCurrency();
+  populateFactory();
   wireSalesRepChange();
   setDefaultQuoteDate();
   wireLiveUpdates();
@@ -120,13 +121,23 @@ function populateCompanyDropdown() {
 function populateCurrency() {
   const select = document.getElementById("currency");
   select.innerHTML = "";
-
   currency.forEach((currency, index) => {
     const option = new Option(currency.name, currency.name);
     if (index === 0) option.selected = true;
     select.append(option);
   });
 }
+
+function populateFactory() {
+  const select = document.getElementById("factory");
+  select.innerHTML = "";
+  factory.forEach((fac, index) => {
+    const option = new Option(fac.name, fac.name);
+    if (index === 0) option.selected = true;
+    select.append(option);
+  });
+}
+
 
 // ------------------
 // Wiring
@@ -171,7 +182,7 @@ function wireLiveUpdates() {
   const fields = document.querySelectorAll(
     "#quoteDate, #quoteId, #salesRep, #agentEmail, #cliffordCompany, " +
     "#customerCompany, #customerName, #address1, #address2, #address3, " +
-    "#currency, #delivery"
+    "#currency, #delivery, #factory"
   );
 
   fields.forEach(field => {
@@ -202,7 +213,8 @@ async function importDataFromDoc() {
       "delivery", 
       "deposit",
       "shipment",
-      "signoff"
+      "signoff",
+      "factory"
     ];
     
     const controlMap = {};
@@ -310,6 +322,7 @@ async function generateQuote() {
       address3: document.getElementById("address3").value,
       currency: document.getElementById("currency").value,
       delivery: document.getElementById("delivery").value,
+      factory: document.getElementById("factory").value,
       deposit: formattedDepositText,
       shipment: formattedShipmentText,
       signoff: formattedSignoffText
