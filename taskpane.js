@@ -23,6 +23,11 @@ const currency = [
   { name: "ZAR" }
 ];
 
+const factory = [
+  { name: "Canton, OH, USA" },
+  { name: "Pietermaritzburg, South Africa" }
+];
+
 let liveUpdateEnabled = false;
 let isSyncing = false;
 
