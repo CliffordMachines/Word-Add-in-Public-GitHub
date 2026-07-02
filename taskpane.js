@@ -1,5 +1,5 @@
 /* global Office, Word */
-// v1.0.0.35
+// v1.0.0.36
 // ------------------
 // Data 
 // ------------------
@@ -227,7 +227,47 @@ async function importDataFromDoc() {
 
     await context.sync();
 
-    tagsToImport.forEach(tag => {
+
+//NEW IMPORT for OC
+
+
+tagsToImport.forEach(tag => {
+      const htmlElement = document.getElementById(tag);
+      const docControls = controlMap[tag].items;
+
+      if (htmlElement && docControls.length > 0) {
+        // Find the first control instance that contains actual text data
+        const validControl = docControls.find(cc => cc.text && cc.text.trim() !== "");
+        
+        // Fallback: If all instances are blank, default to the first control to prevent reference loss
+        const targetControl = validControl || docControls[0];
+        const docValue = targetControl.text;
+
+        if (tag === "salesRep") {
+          const foundRep = salesReps.find(rep => rep.name === docValue);
+          if (foundRep) {
+            htmlElement.value = foundRep.email;
+          }
+        } 
+        else if (tag === "deposit" || tag === "shipment" || tag === "signoff") {
+          if (!docValue || docValue.trim() === "") {
+            htmlElement.value = "";
+          } else {
+            const match = docValue.match(/\d+/);
+            htmlElement.value = match ? match[0] : "";
+          }
+        } 
+        else {
+          htmlElement.value = docValue;
+        }
+      }
+    });
+
+
+
+//END NEW IMPORT FOR OC
+    
+/*    tagsToImport.forEach(tag => {
       const htmlElement = document.getElementById(tag);
       const docControls = controlMap[tag].items;
 
@@ -253,6 +293,7 @@ async function importDataFromDoc() {
         }
       }
     });
+    */
 
     // Run verification cycle after importing to set base status state
     validatePercentagesSubtle();
